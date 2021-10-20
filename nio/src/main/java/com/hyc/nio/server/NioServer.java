@@ -1,6 +1,11 @@
 package com.hyc.nio.server;
 
 
+import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -11,6 +16,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 
+@Slf4j
 public class NioServer {
 
     public static void main(String[] args) throws IOException {
@@ -20,8 +26,7 @@ public class NioServer {
 
         Selector selector = Selector.open();
         ssc.register(selector, SelectionKey.OP_ACCEPT);
-
-        System.out.println("9000服务已启动，并已监听accept事件");
+        log.info("9000服务已启动，并已监听accept事件");
 
         while (true) {
             // select方法阻塞在这里，如果所监听的channel有事件发生就会响应
@@ -42,19 +47,19 @@ public class NioServer {
             SocketChannel clientSocketChannel = channel.accept();
             clientSocketChannel.configureBlocking(false);
             clientSocketChannel.register(key.selector(), SelectionKey.OP_READ);
-            System.out.println("监听read事件，等待客户端写入数据");
+            log.info("监听read事件，等待客户端写入数据");
         } else if (key.isReadable()) {
-            System.out.println("触发read事件，客户端已经写入数据。");
+            log.info("触发read事件，客户端已经写入数据。");
             SocketChannel channel = (SocketChannel) key.channel();
             ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
             int len = channel.read(byteBuffer);
             if (len < 0) {
-                System.out.println("read nothing!");
+                log.info("read nothing!");
             } else {
-                System.out.println(new String(byteBuffer.array(), 0, len));
+                log.info(new String(byteBuffer.array(), 0, len));
             }
             byteBuffer.flip();
-            System.out.println("服务端往客户端回写！");
+            log.info("服务端往客户端回写！");
             channel.write(byteBuffer);
         }
     }
