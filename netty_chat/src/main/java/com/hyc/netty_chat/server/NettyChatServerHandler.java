@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
-public class NettyChatServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class NettyChatServerHandler extends SimpleChannelInboundHandler<String> {
 
     private static ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -34,21 +34,17 @@ public class NettyChatServerHandler extends SimpleChannelInboundHandler<ByteBuf>
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
         Channel channel = ctx.channel();
-        // 因为在pipeline中使用了 String编解码，所以这里msg直接就是一个String
-        String s = byteBuf.toString(CharsetUtil.UTF_8);
-//        String s = ((String) msg);
+        String s = ((String) msg);
         System.out.println("服务端收到消息："+s);
         Iterator<Channel> iterator = channelGroup.iterator();
         while (iterator.hasNext()) {
             Channel next = iterator.next();
             if (next.id().equals(channel.id())) {
-                ByteBuf byteBuf1 = Unpooled.copiedBuffer("自己发的消息："+s, CharsetUtil.UTF_8);
-                channel.writeAndFlush(byteBuf1);
+                channel.writeAndFlush("自己发的消息："+s);
             } else {
-                ByteBuf byteBuf2 = Unpooled.copiedBuffer("客户端【"+channel.remoteAddress()+"】发来消息："+s, CharsetUtil.UTF_8);
-                next.writeAndFlush(byteBuf2);
+                next.writeAndFlush("客户端【"+channel.remoteAddress()+"】发来消息："+s);
             }
         }
     }

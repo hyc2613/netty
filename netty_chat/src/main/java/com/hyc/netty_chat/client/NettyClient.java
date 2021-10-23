@@ -27,9 +27,8 @@ public class NettyClient {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-
-//                            socketChannel.pipeline().addLast("encoder", new StringEncoder());
-//                            socketChannel.pipeline().addLast("decoder", new StringDecoder());
+                            socketChannel.pipeline().addLast("encoder", new StringEncoder());
+                            socketChannel.pipeline().addLast("decoder", new StringDecoder());
                             socketChannel.pipeline().addLast(new NettyChatClientHandler());
                         }
                     });
@@ -39,8 +38,7 @@ public class NettyClient {
             Scanner scanner = new Scanner(System.in);
             while (scanner.hasNextLine()) {
                 String msg = scanner.nextLine();
-                ByteBuf byteBuf = Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8);
-                channel.writeAndFlush(byteBuf);
+                channel.writeAndFlush(msg);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
