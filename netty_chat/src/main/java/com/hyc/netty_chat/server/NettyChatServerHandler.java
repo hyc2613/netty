@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
-public class NettyChatServerHandler extends ChannelInboundHandlerAdapter {
+public class NettyChatServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     private static ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -29,10 +29,14 @@ public class NettyChatServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        ctx.fireChannelReadComplete();
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
         Channel channel = ctx.channel();
         // 因为在pipeline中使用了 String编解码，所以这里msg直接就是一个String
-        ByteBuf byteBuf = (ByteBuf) msg;
         String s = byteBuf.toString(CharsetUtil.UTF_8);
 //        String s = ((String) msg);
         System.out.println("服务端收到消息："+s);
@@ -48,10 +52,4 @@ public class NettyChatServerHandler extends ChannelInboundHandlerAdapter {
             }
         }
     }
-
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        ctx.fireChannelReadComplete();
-    }
-
 }
