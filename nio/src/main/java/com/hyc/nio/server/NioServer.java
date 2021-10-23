@@ -60,6 +60,7 @@ public class NioServer {
             }
             byteBuffer.flip();
             log.info("服务端往客户端回写！");
+            // channel是双向的，可读可写
             channel.write(byteBuffer);
         }
     }

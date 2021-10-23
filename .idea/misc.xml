@@ -5,6 +5,7 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/nio/pom.xml" />
+        <option value="$PROJECT_DIR$/netty_chat/pom.xml" />
       </list>
     </option>
   </component>
