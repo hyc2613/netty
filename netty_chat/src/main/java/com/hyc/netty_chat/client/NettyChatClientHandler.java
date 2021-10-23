@@ -11,10 +11,10 @@ public class NettyChatClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//        ByteBuf byteBuf = (ByteBuf) msg;
-//        String s = byteBuf.toString(CharsetUtil.UTF_8);
+        ByteBuf byteBuf = (ByteBuf) msg;
+        String s = byteBuf.toString(CharsetUtil.UTF_8);
 
-        String s = ((String) msg);
+//        String s = ((String) msg);
         System.out.println(s);
     }
 }

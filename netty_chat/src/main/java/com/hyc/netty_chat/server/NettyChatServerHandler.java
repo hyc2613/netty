@@ -1,6 +1,7 @@
 package com.hyc.netty_chat.server;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -14,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
-public class NettyChatServerHandler extends SimpleChannelInboundHandler {
+public class NettyChatServerHandler extends ChannelInboundHandlerAdapter {
 
     private static ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -28,20 +29,22 @@ public class NettyChatServerHandler extends SimpleChannelInboundHandler {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Channel channel = ctx.channel();
         // 因为在pipeline中使用了 String编解码，所以这里msg直接就是一个String
-//        ByteBuf byteBuf = (ByteBuf) msg;
-//        String s = byteBuf.toString(CharsetUtil.UTF_8);
-        String s = ((String) msg);
+        ByteBuf byteBuf = (ByteBuf) msg;
+        String s = byteBuf.toString(CharsetUtil.UTF_8);
+//        String s = ((String) msg);
         System.out.println("服务端收到消息："+s);
         Iterator<Channel> iterator = channelGroup.iterator();
         while (iterator.hasNext()) {
             Channel next = iterator.next();
             if (next.id().equals(channel.id())) {
-                channel.writeAndFlush("自己发的消息："+s);
+                ByteBuf byteBuf1 = Unpooled.copiedBuffer("自己发的消息："+s, CharsetUtil.UTF_8);
+                channel.writeAndFlush(byteBuf1);
             } else {
-                next.writeAndFlush("客户端【"+channel.remoteAddress()+"】发来消息："+s);
+                ByteBuf byteBuf2 = Unpooled.copiedBuffer("客户端【"+channel.remoteAddress()+"】发来消息："+s, CharsetUtil.UTF_8);
+                next.writeAndFlush(byteBuf2);
             }
         }
     }
