@@ -1,45 +1,48 @@
-package com.hyc.netty_chat.client;
+package com.hyc.handler.object.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 
-import java.util.Scanner;
-
+/**
+ * 传输Object对象
+ */
 public class NettyClient {
 
     public static void main(String[] args) {
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
+        Bootstrap bootstrap = new Bootstrap();
         try {
-            Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(workerGroup)
                     .channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast("encoder", new StringEncoder());
-                            socketChannel.pipeline().addLast("decoder", new StringDecoder());
-                            socketChannel.pipeline().addLast(new NettyChatClientHandler());
+                            ChannelPipeline pipeline = socketChannel.pipeline();
+                            pipeline.addLast(new ObjectEncoder());
+//                            pipeline.addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                            pipeline.addLast(new NettyObjectClientHandler());
+                            pipeline.addLast(new NettyObjectClientOutboundHandler());
                         }
                     });
             ChannelFuture channelFuture = bootstrap.connect("localhost", 9000).sync();
 
             Channel channel = channelFuture.channel();
-            Scanner scanner = new Scanner(System.in);
-            while (scanner.hasNextLine()) {
-                String msg = scanner.nextLine();
-                channel.writeAndFlush(msg);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            channel.closeFuture().sync();
+        } catch(Exception e) {
+
         } finally {
             workerGroup.shutdownGracefully();
         }
+
     }
+
 }
